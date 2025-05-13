@@ -1,0 +1,34 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 2432926943
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  web:
+    cors:
+      origin: '*'
+      credentials: true
+      methods: '*'
+  mail:
+    host: smtp.163.com
+    username: 13435110531@163.com
+    password: VUqf5quVsHJtMJjU
+  rabbitmq:
+    addresses: localhost
+    username: guest
+    password: guest
+    virtual-host: /
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-aliases-package: com.example.entity.dto
+  mapper-locations: classpath:mapper/*.xml
+
+server:
+  port: 8080
