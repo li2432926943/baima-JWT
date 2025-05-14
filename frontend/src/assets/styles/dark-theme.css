@@ -1,0 +1,96 @@
+/* 深色模式全局样式调整 */
+html.dark {
+  --el-color-primary: #409eff;
+  --el-color-primary-light-3: #3375b9;
+  --el-color-primary-light-5: #2a598a;
+  --el-color-primary-light-7: #213d5b;
+  --el-color-primary-light-8: #1b3043;
+  --el-color-primary-light-9: #18202a;
+  --el-color-primary-dark-2: #66b1ff;
+  
+  --el-color-success: #67c23a;
+  --el-color-warning: #e6a23c;
+  --el-color-danger: #f56c6c;
+  --el-color-info: #909399;
+  
+  --el-bg-color: #1d1e1f;
+  --el-bg-color-page: #0a0a0a;
+  --el-bg-color-overlay: #1d1e1f;
+  --el-text-color-primary: #e5eaf3;
+  --el-text-color-regular: #cfd3dc;
+  --el-text-color-secondary: #a3a6ad;
+  --el-text-color-placeholder: #8d9095;
+  --el-text-color-disabled: #6c6e72;
+  --el-border-color: #4c4d4f;
+  --el-border-color-light: #414243;
+  --el-border-color-lighter: #363637;
+  --el-border-color-dark: #58585b;
+  --el-border-color-hover: #747577;
+  --el-fill-color: #2e2e30;
+  --el-fill-color-light: #262727;
+  --el-fill-color-lighter: #1d1d1f;
+  --el-fill-color-blank: transparent;
+  --el-mask-color: rgba(0, 0, 0, 0.8);
+  --el-mask-color-extra-light: rgba(0, 0, 0, 0.3);
+  --el-box-shadow: 0px 12px 32px 4px rgba(0, 0, 0, 0.36), 0px 8px 20px rgba(0, 0, 0, 0.72);
+  --el-box-shadow-light: 0px 0px 12px rgba(0, 0, 0, 0.72);
+  --el-box-shadow-lighter: 0px 0px 6px rgba(0, 0, 0, 0.72);
+  
+  color-scheme: dark;
+}
+
+/* 登录/注册/忘记密码页面深色模式样式调整 */
+html.dark .forget-banner::before,
+html.dark .reset-banner::before,
+html.dark .login-banner::before,
+html.dark .register-banner::before {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8));
+}
+
+/* 表单容器样式 */
+html.dark .login-form-container,
+html.dark .register-form-container,
+html.dark .forget-form-container,
+html.dark .reset-form-container {
+  background-color: #1d1e1f;
+  color: #e5eaf3;
+}
+
+/* 表单标题样式 */
+html.dark .login-title,
+html.dark .register-title,
+html.dark .forget-title,
+html.dark .reset-title {
+  color: #e5eaf3;
+}
+
+/* 表单描述样式 */
+html.dark .login-desc,
+html.dark .register-desc,
+html.dark .forget-desc,
+html.dark .reset-desc {
+  color: #a3a6ad;
+}
+
+/* 分隔线样式 */
+html.dark .divider::before,
+html.dark .divider::after {
+  background: #414243;
+}
+
+html.dark .divider span {
+  color: #a3a6ad;
+}
+
+/* 返回按钮样式 */
+html.dark .back-button,
+html.dark .login-button {
+  background-color: #2e2e30;
+  color: #cfd3dc;
+  border-color: #4c4d4f;
+}
+
+html.dark .back-button:hover,
+html.dark .login-button:hover {
+  background-color: #3e3e40;
+} 
