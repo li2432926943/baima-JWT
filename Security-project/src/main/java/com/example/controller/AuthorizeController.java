@@ -1,7 +1,9 @@
 package com.example.controller;
 
 import com.example.entity.RestBean;
+import com.example.entity.vo.request.ConfirmResetVO;
 import com.example.entity.vo.request.EmailRegisterVO;
+import com.example.entity.vo.request.EmailResetVO;
 import com.example.service.AccountService;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.PermitAll;
@@ -65,6 +67,21 @@ public class AuthorizeController {
             return RestBean.failure(500, "服务器内部错误: " + e.getMessage());
         }
     }
+
+
+    @PostMapping("/reset-confirm")
+    public RestBean<Void> resetConfirm(@RequestBody @Valid ConfirmResetVO vo){
+        System.out.println("==========接收到重置密码请求==========");
+        System.out.println("Email: " + vo.getEmail());
+        System.out.println("验证码: " + vo.getCode());
+        return this.messageHandler(() -> service.resetConfirm(vo));
+    }
+
+    @PostMapping("/reset-password")
+    public RestBean<Void> resetPassword(@RequestBody @Valid EmailResetVO vo){
+        return this.messageHandler(() -> service.resetEmailAccountPassword(vo));
+    }
+
 
     public RestBean<Void> messageHandler(Supplier<String> action){
         String message = action.get();

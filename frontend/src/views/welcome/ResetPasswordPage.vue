@@ -58,15 +58,21 @@ import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter, useRoute } from 'vue-router'
 import animeBg from '@/assets/anime-bg.svg'
+import { post } from '@/net'
 
 const router = useRouter()
 const route = useRoute()
 const passwordFormRef = ref(null)
 const email = ref('')
+const code = ref('')
 
-// 获取路由参数中的邮箱地址
+// 获取路由参数中的邮箱地址和验证码
 if (route.query.email) {
   email.value = route.query.email
+}
+
+if (route.query.code) {
+  code.value = route.query.code
 }
 
 // 错误提示
@@ -125,13 +131,19 @@ const resetPassword = async () => {
     return
   }
   
-  // 这里应该有实际重置密码的API调用
-  // 例如: await resetPasswordApi(email.value, resetForm.newPassword)
-  
-  ElMessage.success('密码重置成功')
-  setTimeout(() => {
-    router.push('/')
-  }, 2000)
+  // 调用重置密码API
+  post('/api/auth/reset-password', {
+    email: email.value,
+    code: code.value,
+    password: resetForm.newPassword
+  }, () => {
+    ElMessage.success('密码重置成功')
+    setTimeout(() => {
+      router.push('/')
+    }, 2000)
+  }, (message) => {
+    ElMessage.error(message)
+  })
 }
 
 const goToLogin = () => {

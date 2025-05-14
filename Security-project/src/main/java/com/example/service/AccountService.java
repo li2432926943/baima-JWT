@@ -47,4 +47,9 @@ public interface AccountService extends IService<Account>, UserDetailsService {
      * @return 操作结果
      */
     String registerEmailAccount(EmailRegisterVO vo);
+
+
+    String resetConfirm(ConfirmResetVO vo);
+
+    String resetEmailAccountPassword(EmailResetVO vo);
 }

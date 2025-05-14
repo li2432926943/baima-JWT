@@ -119,6 +119,29 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         }
     }
 
+    @Override
+    public String resetConfirm(ConfirmResetVO vo) {
+         String email=vo.getEmail();
+         String code=stringRedisTemplate.opsForValue().get(Const.VERIFY_EMAIL_DATA+email);
+         if(code==null) return "请先获取验证码";
+         if(!code.equals(vo.getCode()))return "验证码错误,请重新输入";
+         return null;
+    }
+
+    @Override
+    public String resetEmailAccountPassword(EmailResetVO vo) {
+         String email=vo.getEmail();
+         String verify=this.resetConfirm(new ConfirmResetVO(email,vo.getCode()));
+         if(verify!=null) return verify;
+         String password=encoder.encode(vo.getPassword());
+         boolean update=this.update().eq("email",email).set("password",password).update();
+         if(update){
+             //  删除验证码
+             stringRedisTemplate.delete(Const.VERIFY_EMAIL_DATA+email);
+         }
+         return null;
+    }
+
     public boolean existsAccountByEmail(String email){
         return this.baseMapper.exists(Wrappers.<Account>query().eq("email",email));
     }

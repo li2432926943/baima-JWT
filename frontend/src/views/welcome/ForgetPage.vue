@@ -102,6 +102,7 @@ import { Message } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import animeBg from '@/assets/anime-bg.svg'
+import { get, post } from '@/net'
 
 const router = useRouter()
 const emailFormRef = ref(null)
@@ -182,24 +183,25 @@ const sendVerifyCode = async () => {
   isCodeSending.value = true
   let countdown = 60
   
-  // 模拟发送验证码
-  ElMessage.success('验证码已发送至您的邮箱')
-  
-  codeButtonText.value = `${countdown}秒后重新获取`
-  
-  countdownTimer = setInterval(() => {
-    countdown--
+  // 发送验证码到后端
+  get(`/api/auth/ask-code?email=${forgetForm.email}&type=reset`, () => {
+    ElMessage.success(`验证码已发送至邮箱: ${forgetForm.email}，请注意查收`)
     codeButtonText.value = `${countdown}秒后重新获取`
     
-    if (countdown <= 0) {
-      clearInterval(countdownTimer)
-      codeButtonText.value = '获取验证码'
-      isCodeSending.value = false
-    }
-  }, 1000)
-  
-  // 这里应该有实际发送验证码的API调用
-  // 例如: await sendVerifyCodeApi(forgetForm.email)
+    countdownTimer = setInterval(() => {
+      countdown--
+      codeButtonText.value = `${countdown}秒后重新获取`
+      
+      if (countdown <= 0) {
+        clearInterval(countdownTimer)
+        codeButtonText.value = '获取验证码'
+        isCodeSending.value = false
+      }
+    }, 1000)
+  }, (message) => {
+    ElMessage.warning(message)
+    isCodeSending.value = false
+  })
 }
 
 // 验证验证码
@@ -223,14 +225,16 @@ const verifyCode = async () => {
     return
   }
   
-  // 这里应该有实际验证验证码的API调用
-  // 例如: const result = await verifyCodeApi(forgetForm.email, forgetForm.verifyCode)
-  
-  // 验证成功，跳转到重置密码页面，并传递邮箱参数
-  ElMessage.success('验证码验证通过')
-  router.push({
-    name: 'welcome-reset',
-    query: { email: forgetForm.email }
+  // 验证验证码
+  post('/api/auth/reset-confirm', {
+    email: forgetForm.email,
+    code: forgetForm.verifyCode
+  }, () => {
+    ElMessage.success('验证码验证通过')
+    // 验证成功，切换到第二步
+    currentStep.value = 2
+  }, (message) => {
+    codeError.value = message
   })
 }
 
@@ -260,13 +264,19 @@ const resetPassword = async () => {
     return
   }
   
-  // 这里应该有实际重置密码的API调用
-  // 例如: await resetPasswordApi(forgetForm.email, resetForm.newPassword)
-  
-  ElMessage.success('密码重置成功')
-  setTimeout(() => {
-    router.push('/')
-  }, 2000)
+  // 调用重置密码API
+  post('/api/auth/reset-password', {
+    email: forgetForm.email,
+    code: forgetForm.verifyCode,
+    password: resetForm.newPassword
+  }, () => {
+    ElMessage.success('密码重置成功')
+    setTimeout(() => {
+      router.push('/')
+    }, 2000)
+  }, (message) => {
+    ElMessage.error(message)
+  })
 }
 
 const goToLogin = () => {

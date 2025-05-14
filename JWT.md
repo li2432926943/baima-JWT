@@ -681,6 +681,73 @@ listener创建监听器消费消息队列里面的消息
 
 Authorizecontroller接受邮件验证码请求
 
+是的，您的理解是正确的。根据之前查看的代码，验证码的获取流程如下：
+
+### 验证码获取流程
+
+1. **前端发起验证码请求**：
+   用户点击"获取验证码"按钮，前端通过 GET 请求调用 `/api/auth/ask-code` 接口，传递邮箱地址和验证类型（如 register、reset、modify）。
+
+2. **后端生成随机验证码**：
+   在 `AccountServiceImpl` 的 `registerEmailVerifyCode` 方法中：
+   ```java
+   Random random = new Random();
+   int code = random.nextInt(899999) + 100000;  // 生成6位随机数字
+   ```
+
+3. **存储验证码到 Redis**：
+   ```java
+   String redisKey = Const.VERIFY_EMAIL_DATA + email;  // 构建Redis键
+   stringRedisTemplate.opsForValue()
+          .set(redisKey, String.valueOf(code), 3, TimeUnit.MINUTES);  // 存储验证码，有效期3分钟
+   ```
+   Redis 键格式为：`verify:email:data:用户邮箱`
+
+4. **发送验证码到用户邮箱**：
+   ```java
+   Map<String, Object> data = Map.of("type", type, "email", email, "code", code);
+   rabbitTemplate.convertAndSend(Const.MQ_MAIL, data);  // 通过消息队列发送邮件任务
+   ```
+   系统使用 RabbitMQ 消息队列异步发送邮件，邮件中包含验证码。
+
+5. **用户收到并输入验证码**：
+   用户从邮箱中获取验证码，并在注册表单中填写。
+
+6. **验证码校验过程**：
+   当用户提交注册请求时，在 `AccountServiceImpl` 的 `registerEmailAccount` 方法中：
+   ```java
+   String code = stringRedisTemplate.opsForValue().get(Const.VERIFY_EMAIL_DATA + email);  // 从Redis获取之前存储的验证码
+   if(code == null) return "请先获取验证码";
+   if(!code.equals(vo.getCode())) return "验证码错误,请重新输入";
+   ```
+
+7. **注册成功后清理验证码**：
+   ```java
+   if(this.save(account)){
+       stringRedisTemplate.delete(redisKey);  // 注册成功后删除Redis中的验证码
+       return null;
+   }
+   ```
+
+### 技术细节
+
+- **Redis 存储**：使用键值对存储，键是邮箱地址加前缀，值是验证码
+- **有效期**：验证码在 Redis 中的有效期为 3 分钟
+- **异步发送**：使用 RabbitMQ 消息队列异步发送邮件，不阻塞主请求
+- **防刷机制**：系统实现了 IP 限流功能，防止频繁请求验证码
+  ```java
+  if(!this.verifyLimit(address))
+      return "请求频繁，请稍后再试";
+  ```
+
+这种设计有以下优点：
+1. 验证码存储在 Redis 中，即使应用重启也不会丢失
+2. 设置了有效期，提高安全性
+3. 使用消息队列发送邮件，提高系统响应速度
+4. 实现了防刷机制，增强安全性
+
+整个流程设计合理，符合现代Web应用的安全最佳实践。
+
 
 
 # P15:注册接口实现：用户提交表单json，我们mapper向后端拿邮箱和手机号，再和json对比写逻辑，如果没有就可以注册。
@@ -758,6 +825,55 @@ sequenceDiagram
 
 总的来说，问题主要集中在配置上：安全配置、数据库配置和端口配置。这些是Spring Boot应用中最常见的问题类型，通过适当的配置和调试，您已经成功解决了它们
 
+## 注册的流程
+
+目前的话，主流的注册一般是前端提交表单数据，然后我们配置转化为json发送到后端，然后到数据库校验，返回json给前端校验对吗
+
+
+
+是的，目前主流的前后端分离架构中，用户注册流程通常如下：
+
+---
+
+### **1. 前端处理**
+- **表单提交**：用户填写注册表单（用户名、密码、邮箱等）
+- **前端校验**：先进行基础校验（如非空、密码复杂度、邮箱格式等）
+- **转为 JSON**：将表单数据组装成 JSON 格式（例如 `{"username":"test","password":"123456","email":"test@example.com"}`）
+- **HTTP 请求**：通过 `POST` 请求发送到后端 API（如 `/api/auth/register`）
+
+---
+
+### **2. 后端处理**
+- **接收数据**：后端（Spring Boot/Django/Node.js 等）接收 JSON 数据并解析为对象。
+- **数据校验**：
+  - **基础校验**：检查字段是否合法（如长度、格式）。
+  - **业务校验**：检查用户名/邮箱是否已存在（查询数据库）。
+- **数据持久化**：
+  - 密码加密（如 BCrypt）。
+  - 将用户数据存入数据库（如 MySQL/MongoDB）。
+- **生成响应**：
+  - 成功：返回 HTTP 200 或 201，附带 JSON 格式的成功消息（如 `{"code":200, "message":"注册成功"}`）。
+  - 失败：返回 HTTP 400/409 等，附带错误原因（如 `{"code":409, "message":"用户名已存在"}`）。
+
+---
+
+### **3. 数据库交互**
+- 后端通过 ORM（如 MyBatis/Hibernate）或原生 SQL 操作数据库。
+- 关键操作：
+  ```sql
+  SELECT * FROM users WHERE username = ? OR email = ?; -- 校验是否已存在
+  INSERT INTO users (username, password, email) VALUES (?, ?, ?); -- 注册新用户
+  ```
+
+---
+
+### **4. 前端响应**
+- 根据后端返回的 JSON 结果：
+  - 成功：跳转到登录页或显示成功提示。
+  - 失败：在表单中显示错误信息（如“邮箱已被注册”）。
+
+---
+
 
 
 # p16：注册界面编写
@@ -774,8 +890,26 @@ const loginForm = reactive({  username: '',  password: '',  remember: false })�
 
 所以一般是先声明axios，然后注册界面那里先定义一个函数调用axios，然后组件使用函数
 
-# p18:忘记密码页面设计：
+# p18:重置密码页面设计：
 
 先声明路由，然后使用路由，就能实现路由页面跳转(axios请求也是如此类似)(中间可以加层js函数作为中介)
 
 重置密码：1：先验证邮箱（有没有权限）.2：再重置密码
+
+可以用elementui的进度条来使用户体验更好
+
+
+
+
+
+# p19：重置密码后端
+
+## 方案一：(要往redis存标记)
+
+用户先带着验证码请求对应接口，然后后端存储对应用户已经通过的标记，用户填写新的密码之后 然后请求重置密码的接口，接口验证是否已经通过，然后才重置密码
+
+## 方案二：
+
+用户带着验证码请求对应接口，然后后端仅对验证码是否正确进行验证(后端会返回正确或者错误给前端，前端判断，正确就下一步)，用户填写新的密码之后，请求重置密码接口，不仅需要带上密码还要之前的验证码一起，然后再次验证验证码如果正确，就重置密码
+
+这里我们使用方案二
