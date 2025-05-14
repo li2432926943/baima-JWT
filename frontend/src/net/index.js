@@ -156,7 +156,12 @@ function internalPost(url, data, headers, success, failure, error = defaultError
 }
 
 function internalGet(url, headers, success, failure, error = defaultError){
-    axios.get(url, { headers: headers }).then(({data}) => {
+    console.log(`发送GET请求到: ${url}`, headers)
+    
+    axios.get(url, { headers: headers }).then(response => {
+        console.log(`收到GET响应 (${url}):`, response.data)
+        const data = response.data
+        
         if(data.code === 200)
             success(data.data)
         else

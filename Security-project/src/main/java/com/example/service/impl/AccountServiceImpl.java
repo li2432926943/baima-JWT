@@ -76,8 +76,18 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         int code=random.nextInt(899999)+100000;
         Map<String, Object> data = Map.of("type",type,"email", email, "code", code);
         rabbitTemplate.convertAndSend(Const.MQ_MAIL, data);
+        
+        // 添加调试日志
+        String redisKey = Const.VERIFY_EMAIL_DATA + email;
+        System.out.println("存储验证码到Redis - 键: " + redisKey + ", 值: " + code);
+        
         stringRedisTemplate.opsForValue()
-                .set(Const.VERIFY_EMAIL_DATA + email, String.valueOf(code), 3, TimeUnit.MINUTES);
+                .set(redisKey, String.valueOf(code), 3, TimeUnit.MINUTES);
+        
+        // 验证是否成功存储
+        String storedCode = stringRedisTemplate.opsForValue().get(redisKey);
+        System.out.println("验证Redis存储 - 键: " + redisKey + ", 存储的值: " + storedCode);
+        
         return null;
     }
 
@@ -85,8 +95,16 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     public String registerEmailAccount(EmailRegisterVO vo) {
         String email=vo.getEmail();
         String username=vo.getUsername();
-        String code=stringRedisTemplate.opsForValue().get(Const.VERIFY_EMAIL_DATA+email);
-        String key=Const.VERIFY_EMAIL_DATA+email;
+        
+        // 添加调试日志
+        System.out.println("注册请求 - 邮箱: [" + email + "], 用户名: [" + username + "], 验证码: [" + vo.getCode() + "]");
+        
+        String redisKey = Const.VERIFY_EMAIL_DATA + email;
+        System.out.println("从Redis获取验证码 - 键: " + redisKey);
+        
+        String code=stringRedisTemplate.opsForValue().get(redisKey);
+        System.out.println("Redis中存储的验证码: " + code);
+        
         if(code==null) return "请先获取验证码";
         if(!code.equals(vo.getCode())) return "验证码错误,请重新输入";
         if(this.existsAccountByEmail(email)) return "此电子邮件已被其他用户注册";
@@ -94,7 +112,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         String password=encoder.encode(vo.getPassword());
         Account account = new Account(null, username, password, email, "ROLE_USER", null, new Date());
         if(this.save(account)){
-            stringRedisTemplate.delete(key);
+            stringRedisTemplate.delete(redisKey);
             return null;
         }else{
             return "内部错误，请联系管理员";
