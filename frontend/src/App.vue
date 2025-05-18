@@ -1,21 +1,13 @@
 <template>
   <div class="app-container" :class="{ 'dark': isDark }">
-    <div class="theme-toggle">
-      <span class="theme-text">{{ isDark ? '暗黑模式' : '浅色模式' }}</span>
-      <el-switch
-        v-model="isDark"
-        active-text="暗"
-        inactive-text="亮"
-        inline-prompt
-      />
-    </div>
     <router-view />
   </div>
 </template>
 
 <script setup>
 import { useDark, useToggle } from '@vueuse/core'
-import { watch } from 'vue'
+import { watch, ref } from 'vue'
+import { Moon, Sunny } from '@element-plus/icons-vue'
 
 // 使用VueUse的深色模式钩子
 const isDark = useDark()
@@ -49,43 +41,6 @@ html.dark {
   color-scheme: dark;
 }
 
-.theme-toggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.4);
-  padding: 8px 12px;
-  border-radius: 20px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  transition: all 0.3s;
-}
-
-.theme-text {
-  margin-right: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: color 0.3s;
-}
-
-html.dark .theme-toggle {
-  background-color: rgba(30, 30, 30, 0.7);
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.4);
-}
-
-html.dark .theme-text {
-  color: white;
-}
-
-/* 设置深色模式下的全局样式 */
-.dark {
-  background-color: #222;
-  color: #fff;
-}
-
 /* 确保Element Plus组件遵循深色主题 */
 html.dark .el-button {
   --el-button-bg-color: #333;
@@ -107,4 +62,4 @@ html.dark .el-input__inner {
   --el-switch-on-color: #409eff;
   --el-switch-off-color: #dcdfe6;
 }
-</style> 
+</style>

@@ -11,6 +11,6 @@ spring:
         frequency: 30  # 判定为恶意刷令牌的阈值次数
   web:
     flow:
-      limit: 5  # 单个IP在时间段内最大请求次数
+      limit: 20  # 单个IP在时间段内最大请求次数
       period: 1  # 计数时间周期（秒）
       block: 30  # 超出请求限制后封禁时间（秒）

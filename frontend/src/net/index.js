@@ -199,7 +199,14 @@ function post(url, data, success, failure = defaultFailure) {
 }
 
 function logout(success, failure = defaultFailure){
-    get('/api/auth/logout', () => {
+    const token = takeAccessToken()
+    if(!token) {
+        ElMessage.warning('您已经退出登录')
+        success()
+        return
+    }
+    
+    internalGet('/api/auth/logout', accessHeader(), () => {
         deleteAccessToken()
         ElMessage.success(`退出登录成功，欢迎您再次使用`)
         success()
