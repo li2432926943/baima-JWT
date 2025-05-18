@@ -57,7 +57,7 @@ const router = createRouter({
                 {
                     path: 'user-setting',
                     name: 'user-setting',
-                    component: () => import('@/views/index/UserSettingPage.vue')
+                    component: () => import('@/views/settings/UserSettingPage.vue')
                 },
                 {
                     path: 'privacy-setting',
