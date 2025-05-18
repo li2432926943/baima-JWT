@@ -1,161 +1,392 @@
 <template>
-  <div class="index-container">
-    <el-container>
-      <el-header>
-        <div class="header-content">
-          <el-image class="logo" src="https://element-plus.org/images/element-plus-logo.svg"/>
-          <el-menu mode="horizontal" :router="true" class="main-menu">
-            <el-menu-item index="/index">首页</el-menu-item>
-            <el-menu-item index="/about">关于</el-menu-item>
-            <el-menu-item index="/index/learning">学习平台</el-menu-item>
-            <el-menu-item index="/index/forum">论坛</el-menu-item>
-            <el-menu-item index="/index/user-setting">用户设置</el-menu-item>
-            <el-menu-item index="/index/privacy-setting">隐私设置</el-menu-item>
-          </el-menu>
-          <div class="user-actions">
-            <el-switch
-              v-model="isDark"
-              class="theme-switch"
-              inline-prompt
-              :active-icon="Moon"
-              :inactive-icon="Sunny"
-            />
-            <el-dropdown class="user-dropdown">
-              <div class="user-avatar-wrapper">
-                <el-avatar :size="32" :src="defaultAvatar" />
-                <span class="user-name">用户名</span>
-              </div>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item>个人中心</el-dropdown-item>
-                  <el-dropdown-item>设置</el-dropdown-item>
-                  <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+  <div class="main-content" v-loading="loading" element-loading-text="正在进入，请稍后...">
+    <el-container style="height: 100%" v-if="!loading">
+      <el-header class="main-content-header">
+        <el-image class="logo" src="https://element-plus.org/images/element-plus-logo.svg"/>
+        <div style="flex: 1;padding: 0 20px;text-align: center">
+          <el-input v-model="searchInput.text" style="width: 100%;max-width: 500px"
+                    placeholder="搜索论坛相关内容...">
+            <template #prefix>
+              <el-icon>
+                <Search/>
+              </el-icon>
+            </template>
+            <template #append>
+              <el-select style="width: 120px" v-model="searchInput.type">
+                <el-option value="1" label="帖子广场"/>
+                <el-option value="2" label="校园活动"/>
+                <el-option value="3" label="表白墙"/>
+                <el-option value="4" label="教务通知"/>
+              </el-select>
+            </template>
+          </el-input>
+        </div>
+        <div class="user-info">
+          <el-popover placement="bottom" :width="350" trigger="click">
+            <template #reference>
+              <el-badge style="margin-right: 15px" is-dot :hidden="!notification.length">
+                <div class="notification">
+                  <el-icon><Bell/></el-icon>
+                  <div style="font-size: 10px">消息</div>
+                </div>
+              </el-badge>
+            </template>
+            <el-empty :image-size="80" description="暂时没有未读消息哦~" v-if="!notification.length"/>
+            <el-scrollbar :max-height="500" v-else>
+              <light-card v-for="item in notification" class="notification-item"
+                          @click="confirmNotification(item.id, item.url)">
+                <div>
+                  <el-tag size="small" :type="item.type">消息</el-tag>&nbsp;
+                  <span style="font-weight: bold">{{item.title}}</span>
+                </div>
+                <el-divider style="margin: 7px 0 3px 0"/>
+                <div style="font-size: 13px;color: grey">
+                  {{item.content}}
+                </div>
+              </light-card>
+            </el-scrollbar>
+            <div style="margin-top: 10px">
+              <el-button size="small" type="info" :icon="Check" @click="deleteAllNotification"
+                         style="width: 100%" plain>清除全部未读消息</el-button>
+            </div>
+          </el-popover>
+          <div class="profile">
+            <div>{{ username }}</div>
+            <div>{{ email }}</div>
           </div>
+          <el-dropdown>
+            <el-avatar :src="defaultAvatar"/>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>
+                  <el-icon>
+                    <Operation/>
+                  </el-icon>
+                  个人设置
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <el-icon>
+                    <Message/>
+                  </el-icon>
+                  消息列表
+                </el-dropdown-item>
+                <el-dropdown-item @click="handleLogout" divided>
+                  <el-icon>
+                    <Back/>
+                  </el-icon>
+                  退出登录
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </el-header>
-      <el-main>
-        <router-view />
-      </el-main>
-      <el-footer>Copyright © 2023 白马JWT</el-footer>
+      <el-container>
+        <el-aside width="230px">
+          <el-scrollbar style="height: calc(100vh - 55px)">
+            <el-menu
+                    router
+                    :default-active="$route.path"
+                    :default-openeds="['1', '2', '3']"
+                    style="min-height: calc(100vh - 55px)">
+              <el-sub-menu index="1">
+                <template #title>
+                  <el-icon>
+                    <Location/>
+                  </el-icon>
+                  <span><b>校园论坛</b></span>
+                </template>
+                <el-menu-item index="/index">
+                  <template #title>
+                    <el-icon>
+                      <ChatDotSquare/>
+                    </el-icon>
+                    帖子广场
+                  </template>
+                </el-menu-item>
+                <el-menu-item>
+                  <template #title>
+                    <el-icon>
+                      <Bell/>
+                    </el-icon>
+                    失物招领
+                  </template>
+                </el-menu-item>
+                <el-menu-item>
+                  <template #title>
+                    <el-icon>
+                      <Notification/>
+                    </el-icon>
+                    校园活动
+                  </template>
+                </el-menu-item>
+                <el-menu-item>
+                  <template #title>
+                    <el-icon>
+                      <Umbrella/>
+                    </el-icon>
+                    表白墙
+                  </template>
+                </el-menu-item>
+                <el-menu-item>
+                  <template #title>
+                    <el-icon>
+                      <School/>
+                    </el-icon>
+                    海文考研
+                    <el-tag style="margin-left: 10px" size="small">合作机构</el-tag>
+                  </template>
+                </el-menu-item>
+              </el-sub-menu>
+              <el-sub-menu index="2">
+                <template #title>
+                  <el-icon>
+                    <Position/>
+                  </el-icon>
+                  <span><b>探索与发现</b></span>
+                </template>
+                <el-menu-item>
+                  <template #title>
+                    <el-icon>
+                      <Document/>
+                    </el-icon>
+                    成绩查询
+                  </template>
+                </el-menu-item>
+                <el-menu-item>
+                  <template #title>
+                    <el-icon>
+                      <Files/>
+                    </el-icon>
+                    班级课程表
+                  </template>
+                </el-menu-item>
+                <el-menu-item>
+                  <template #title>
+                    <el-icon>
+                      <Monitor/>
+                    </el-icon>
+                    教务通知
+                  </template>
+                </el-menu-item>
+                <el-menu-item>
+                  <template #title>
+                    <el-icon>
+                      <Collection/>
+                    </el-icon>
+                    在线图书馆
+                  </template>
+                </el-menu-item>
+                <el-menu-item>
+                  <template #title>
+                    <el-icon>
+                      <DataLine/>
+                    </el-icon>
+                    预约教室
+                  </template>
+                </el-menu-item>
+              </el-sub-menu>
+              <el-sub-menu index="3">
+                <template #title>
+                  <el-icon>
+                    <Operation/>
+                  </el-icon>
+                  <span><b>个人设置</b></span>
+                </template>
+                <el-menu-item index="/index/user-setting">
+                  <template #title>
+                    <el-icon>
+                      <User/>
+                    </el-icon>
+                    个人信息设置
+                  </template>
+                </el-menu-item>
+                <el-menu-item index="/index/privacy-setting">
+                  <template #title>
+                    <el-icon>
+                      <Lock/>
+                    </el-icon>
+                    账号安全设置
+                  </template>
+                </el-menu-item>
+              </el-sub-menu>
+              
+              <!-- 添加开发测试专用区域 -->
+              <el-divider>开发测试区域</el-divider>
+              <el-menu-item index="/login">
+                <template #title>
+                  <el-icon><Back /></el-icon>
+                  访问登录页面
+                </template>
+              </el-menu-item>
+            </el-menu>
+          </el-scrollbar>
+        </el-aside>
+        <el-main class="main-content-page">
+          <el-scrollbar style="height: calc(100vh - 55px)">
+            <router-view v-slot="{ Component }">
+              <transition name="el-fade-in-linear" mode="out-in">
+                <component :is="Component" style="height: 100%"/>
+              </transition>
+            </router-view>
+          </el-scrollbar>
+        </el-main>
+      </el-container>
     </el-container>
   </div>
 </template>
 
 <script setup>
-import { useDark, useToggle } from '@vueuse/core'
-import { ref, watch } from 'vue'
-import { Moon, Sunny, ArrowDown } from '@element-plus/icons-vue'
+import {get, logout} from '@/net'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { logout } from '@/net'
+import {reactive, ref, watch} from "vue"
+import {
+  Back,
+  Bell,
+  ChatDotSquare, Check, Collection, DataLine,
+  Document, Files,
+  Location, Lock, Message, Monitor,
+  Notification, Operation,
+  Position,
+  School, Search,
+  Umbrella, User, Moon, Sunny
+} from "@element-plus/icons-vue"
+import { useDark, useToggle } from '@vueuse/core'
+import LightCard from "@/components/LightCard.vue"
+import { useStore } from "@/store"
 
-// 使用VueUse的深色模式钩子
+// 使用状态管理
+const store = useStore()
+
+// 保留原有的深色模式支持
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const router = useRouter()
 
-// 默认头像URL
-const defaultAvatar = ref('https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
+// 设置默认头像
+const defaultAvatar = ref(store.avatarUrl)
 
 // 当深色模式变化时更新Element Plus的主题
 watch(isDark, (val) => {
-  // 更新Element Plus主题
   document.documentElement.setAttribute('data-theme', val ? 'dark' : 'light')
-  // 自动设置html标签的类
   document.documentElement.setAttribute('class', val ? 'dark' : 'light')
 }, { immediate: true })
 
-// 退出登录
+const loading = ref(true)
+const username = ref(store.user.username)
+const email = ref(store.user.email)
+
+const searchInput = reactive({
+    type: '1',
+    text: ''
+})
+
+const notification = ref([])
+
+// 模拟加载效果，这样用户体验会更好
+setTimeout(() => {
+  loading.value = false
+}, 1000)
+
+// 加载通知消息
+get('/api/notification/list', data => notification.value = data)
+
+// 加载用户信息
+// 在开发或生产环境中都会尝试获取用户信息
+get('/api/user/info', (data) => {
+  store.user = data
+  username.value = store.user.username
+  email.value = store.user.email
+})
+
+// 退出登录功能
 const handleLogout = () => {
   logout(() => {
     router.push('/')
   })
 }
+
+// 消息通知相关功能（目前只是占位）
+function confirmNotification(id, url) {
+    // 实现确认通知的功能
+}
+
+function deleteAllNotification() {
+    // 实现删除所有通知的功能
+    notification.value = []
+}
 </script>
 
-<style scoped>
-.index-container {
-  height: 100%;
+<style lang="less" scoped>
+.notification-item {
+    transition: .3s;
+    &:hover {
+        cursor: pointer;
+        opacity: 0.7;
+    }
 }
 
-.el-container {
-  height: 100%;
+.notification {
+    font-size: 22px;
+    line-height: 14px;
+    text-align: center;
+    transition: color .3s;
+
+    &:hover {
+        color: grey;
+        cursor: pointer;
+    }
 }
 
-.el-header {
-  background-color: var(--el-bg-color);
-  border-bottom: 1px solid var(--el-border-color-light);
-  padding: 0 20px;
+.main-content-page {
+    padding: 0;
+    background-color: #f7f8fa;
 }
 
-.header-content {
-  display: flex;
-  align-items: center;
-  height: 100%;
+.dark .main-content-page {
+    background-color: #212225;
 }
 
-.logo {
-  height: 40px;
-  margin-right: 40px;
+.main-content {
+    height: 100vh;
+    width: 100vw;
 }
 
-.main-menu {
-  flex: 1;
-  border-bottom: none;
-}
+.main-content-header {
+    border-bottom: solid 1px var(--el-border-color);
+    height: 55px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
 
-.user-actions {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+    .logo {
+        height: 32px;
+    }
 
-.theme-switch {
-  margin-right: 8px;
-}
+    .user-info {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
 
-.user-avatar-wrapper {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 2px 8px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
+        .el-avatar:hover {
+            cursor: pointer;
+        }
 
-.user-avatar-wrapper:hover {
-  background-color: var(--el-fill-color-light);
-}
+        .profile {
+            text-align: right;
+            margin-right: 20px;
 
-.user-name {
-  margin-left: 8px;
-  font-size: 14px;
-  color: var(--el-text-color-primary);
-}
+            :first-child {
+                font-size: 18px;
+                font-weight: bold;
+                line-height: 20px;
+            }
 
-.user-dropdown {
-  height: 100%;
-  display: flex;
-  align-items: center;
-}
-
-.el-main {
-  padding: 20px;
-  background-color: var(--el-bg-color-page);
-}
-
-.el-footer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--el-text-color-secondary);
-  font-size: 14px;
-  background-color: var(--el-bg-color);
-  border-top: 1px solid var(--el-border-color-light);
-  height: 60px !important;
+            :last-child {
+                font-size: 10px;
+                color: grey;
+            }
+        }
+    }
 }
 </style>
