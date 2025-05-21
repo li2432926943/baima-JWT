@@ -1,24 +1,18 @@
 import axios from "axios";
 import {ElMessage} from "element-plus";
 
-// 开发环境标志，打包时改为false
-const isDevelopment = true;
+// 应用启动时清除可能存在的无效token
+function clearAllTokens() {
+    console.log('清除所有存储的token');
+    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('access_token');
+}
 
-// 模拟响应延迟
-const mockDelay = 500;
+// 立即执行一次清除操作，解决启动时可能存在的无效token导致的问题
+clearAllTokens();
 
 const authItemName = "authorize"
 const storageKeyName = "access_token"  // 实际存储在localStorage/sessionStorage中的键名
-
-// 为开发环境提供一个模拟的token
-if (isDevelopment && !localStorage.getItem(storageKeyName) && !sessionStorage.getItem(storageKeyName)) {
-    const mockToken = {
-        token: "mock-jwt-token-for-development",
-        expire: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24小时后过期
-    };
-    localStorage.setItem(storageKeyName, JSON.stringify(mockToken));
-    console.log('已创建开发环境模拟token');
-}
 
 const accessHeader = () => {
     return {
@@ -91,11 +85,17 @@ function takeAccessToken() {
         if (expireDate <= now) {
             console.warn('Token已过期:', expireDate, '当前时间:', now);
             deleteAccessToken();
-            ElMessage.warning("登录状态已过期，请重新登录！");
             return null;
         }
         
-        return authObj.token;
+        // 验证token是否仍然有效（添加一个简单测试请求）
+        try {
+            // 仅返回token，由业务逻辑处理无效token
+            return authObj.token;
+        } catch (error) {
+            console.warn('Token可能已失效，但未过期');
+            return authObj.token;
+        }
     } catch (e) {
         console.error('读取Token时出错:', e);
         deleteAccessToken();
@@ -148,31 +148,12 @@ function storeAccessToken(remember, token, expire){
 }
 
 function deleteAccessToken() {
+    console.log('删除access token')
     localStorage.removeItem(storageKeyName)
     sessionStorage.removeItem(storageKeyName)
 }
 
 function internalPost(url, data, headers, success, failure, error = defaultError){
-    // 开发环境使用模拟数据
-    if (isDevelopment) {
-        console.log(`[开发模式] 模拟POST请求: ${url}`, data);
-        setTimeout(() => {
-            // 根据URL返回不同的模拟数据
-            if (url.includes('/api/auth/login')) {
-                success({
-                    username: '开发测试用户',
-                    token: 'mock-token-xxx',
-                    expire: new Date(Date.now() + 24 * 60 * 60 * 1000)
-                });
-            } else if (url.includes('/api/auth/logout')) {
-                success({});
-            } else {
-                success({});
-            }
-        }, mockDelay);
-        return;
-    }
-    
     console.log(`发送POST请求到: ${url}`, data)
     
     axios.post(url, data, { headers: headers })
@@ -192,28 +173,6 @@ function internalPost(url, data, headers, success, failure, error = defaultError
 }
 
 function internalGet(url, headers, success, failure, error = defaultError){
-    // 开发环境使用模拟数据
-    if (isDevelopment) {
-        console.log(`[开发模式] 模拟GET请求: ${url}`, headers);
-        setTimeout(() => {
-            // 根据URL返回不同的模拟数据
-            if (url.includes('/api/user/info')) {
-                success({
-                    username: '开发测试用户',
-                    email: 'dev@example.com',
-                    id: 1,
-                    role: 'admin',
-                    avatar: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
-                });
-            } else if (url.includes('/api/notification/list')) {
-                success([]);
-            } else {
-                success({});
-            }
-        }, mockDelay);
-        return;
-    }
-    
     console.log(`发送GET请求到: ${url}`, headers)
     
     axios.get(url, { headers: headers }).then(response => {
@@ -276,11 +235,10 @@ function get(url, success, failure = defaultFailure) {
 }
 
 function unauthorized() {
-    // 开发环境下始终返回已授权
-    if (isDevelopment) {
-        return false;
-    }
-    return !takeAccessToken()
+    const token = takeAccessToken();
+    const result = !token;
+    console.log('检查授权状态 - 是否未授权:', result, '有token:', !!token);
+    return result;
 }
 
-export { post, get, login, logout, unauthorized, accessHeader } 
+export { post, get, login, logout, unauthorized, accessHeader, clearAllTokens } 

@@ -39,6 +39,56 @@ html.dark {
   color-scheme: dark;
 }
 
+/* 主布局深色模式样式调整 */
+html.dark .main-content {
+  background-color: var(--el-bg-color);
+  color: var(--el-text-color-primary);
+}
+
+html.dark .main-content-header {
+  background-color: var(--el-bg-color);
+  border-color: var(--el-border-color);
+}
+
+html.dark .el-menu {
+  background-color: var(--el-bg-color);
+  border-color: var(--el-border-color);
+}
+
+html.dark .el-menu-item {
+  color: var(--el-text-color-regular);
+}
+
+html.dark .el-menu-item:hover {
+  background-color: var(--el-fill-color-light);
+}
+
+html.dark .el-sub-menu__title {
+  color: var(--el-text-color-primary);
+}
+
+/* 卡片和面板深色模式样式 */
+html.dark .el-card {
+  background-color: var(--el-bg-color);
+  border-color: var(--el-border-color);
+  color: var(--el-text-color-primary);
+}
+
+html.dark .el-card__header {
+  border-color: var(--el-border-color);
+}
+
+/* 表单元素深色模式样式 */
+html.dark .el-input__inner {
+  background-color: var(--el-bg-color);
+  border-color: var(--el-border-color);
+  color: var(--el-text-color-primary);
+}
+
+html.dark .el-input__inner::placeholder {
+  color: var(--el-text-color-placeholder);
+}
+
 /* 登录/注册/忘记密码页面深色模式样式调整 */
 html.dark .forget-banner::before,
 html.dark .reset-banner::before,
@@ -52,8 +102,8 @@ html.dark .login-form-container,
 html.dark .register-form-container,
 html.dark .forget-form-container,
 html.dark .reset-form-container {
-  background-color: #1d1e1f;
-  color: #e5eaf3;
+  background-color: var(--el-bg-color);
+  color: var(--el-text-color-primary);
 }
 
 /* 表单标题样式 */
@@ -61,7 +111,7 @@ html.dark .login-title,
 html.dark .register-title,
 html.dark .forget-title,
 html.dark .reset-title {
-  color: #e5eaf3;
+  color: var(--el-text-color-primary);
 }
 
 /* 表单描述样式 */
@@ -69,28 +119,60 @@ html.dark .login-desc,
 html.dark .register-desc,
 html.dark .forget-desc,
 html.dark .reset-desc {
-  color: #a3a6ad;
+  color: var(--el-text-color-secondary);
 }
 
 /* 分隔线样式 */
 html.dark .divider::before,
 html.dark .divider::after {
-  background: #414243;
+  background: var(--el-border-color);
 }
 
 html.dark .divider span {
-  color: #a3a6ad;
+  color: var(--el-text-color-secondary);
 }
 
 /* 返回按钮样式 */
 html.dark .back-button,
 html.dark .login-button {
-  background-color: #2e2e30;
-  color: #cfd3dc;
-  border-color: #4c4d4f;
+  background-color: var(--el-fill-color);
+  color: var(--el-text-color-regular);
+  border-color: var(--el-border-color);
 }
 
 html.dark .back-button:hover,
 html.dark .login-button:hover {
-  background-color: #3e3e40;
+  background-color: var(--el-fill-color-light);
+}
+
+/* 通知消息样式 */
+html.dark .notification-item {
+  background-color: var(--el-bg-color);
+  border-color: var(--el-border-color);
+}
+
+html.dark .notification-item:hover {
+  background-color: var(--el-fill-color-light);
+}
+
+/* 用户信息样式 */
+html.dark .profile {
+  color: var(--el-text-color-primary);
+}
+
+html.dark .profile :last-child {
+  color: var(--el-text-color-secondary);
+}
+
+/* 滚动条样式 */
+html.dark ::-webkit-scrollbar {
+  background-color: var(--el-bg-color);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background-color: var(--el-border-color);
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--el-border-color-hover);
 } 

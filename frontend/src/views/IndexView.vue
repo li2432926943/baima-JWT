@@ -22,6 +22,12 @@
           </el-input>
         </div>
         <div class="user-info">
+          <el-tooltip content="切换深浅色模式" placement="bottom">
+            <div class="theme-switch" @click="toggleDark()">
+              <el-icon><component :is="isDark ? Moon : Sunny"/></el-icon>
+              <div style="font-size: 10px">主题</div>
+            </div>
+          </el-tooltip>
           <el-popover placement="bottom" :width="350" trigger="click">
             <template #reference>
               <el-badge style="margin-right: 15px" is-dot :hidden="!notification.length">
@@ -258,9 +264,10 @@ import { useStore } from "@/store"
 // 使用状态管理
 const store = useStore()
 
-// 保留原有的深色模式支持
+// 深色模式支持
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
+
 const router = useRouter()
 
 // 设置默认头像
@@ -270,6 +277,7 @@ const defaultAvatar = ref(store.avatarUrl)
 watch(isDark, (val) => {
   document.documentElement.setAttribute('data-theme', val ? 'dark' : 'light')
   document.documentElement.setAttribute('class', val ? 'dark' : 'light')
+  localStorage.setItem('theme', val ? 'dark' : 'light')
 }, { immediate: true })
 
 const loading = ref(true)
@@ -289,15 +297,29 @@ setTimeout(() => {
 }, 1000)
 
 // 加载通知消息
-get('/api/notification/list', data => notification.value = data)
+get('/api/notification/list', 
+  data => notification.value = data,
+  (errorMsg) => {
+    console.warn('获取通知列表失败:', errorMsg)
+    // 设置空通知列表，避免界面出错
+    notification.value = []
+  }
+)
 
 // 加载用户信息
 // 在开发或生产环境中都会尝试获取用户信息
-get('/api/user/info', (data) => {
-  store.user = data
-  username.value = store.user.username
-  email.value = store.user.email
-})
+get('/api/user/info', 
+  (data) => {
+    store.user = data
+    username.value = store.user.username
+    email.value = store.user.email
+  },
+  (errorMsg) => {
+    console.warn('获取用户信息失败:', errorMsg)
+    // 失败时也结束加载状态
+    loading.value = false
+  }
+)
 
 // 退出登录功能
 const handleLogout = () => {
@@ -341,6 +363,9 @@ function deleteAllNotification() {
 .main-content-page {
     padding: 0;
     background-color: #f7f8fa;
+    height: calc(100vh - 55px);  /* 减去头部高度 */
+    display: flex;
+    flex-direction: column;
 }
 
 .dark .main-content-page {
@@ -350,6 +375,9 @@ function deleteAllNotification() {
 .main-content {
     height: 100vh;
     width: 100vw;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;  /* 防止出现滚动条 */
 }
 
 .main-content-header {
@@ -358,6 +386,7 @@ function deleteAllNotification() {
     display: flex;
     align-items: center;
     box-sizing: border-box;
+    flex-shrink: 0;  /* 防止头部被压缩 */
 
     .logo {
         height: 32px;
@@ -388,5 +417,63 @@ function deleteAllNotification() {
             }
         }
     }
+}
+
+.theme-switch {
+    cursor: pointer;
+    margin-right: 15px;
+    text-align: center;
+    color: var(--el-text-color-regular);
+}
+
+.theme-switch:hover {
+    color: var(--el-color-primary);
+}
+
+/* 调整侧边栏和主内容区域的布局 */
+.el-container {
+    height: calc(100vh - 55px);
+    flex: 1;
+    overflow: hidden;
+}
+
+.el-aside {
+    height: 100%;
+    overflow: hidden;
+    border-right: 1px solid var(--el-border-color);
+}
+
+.el-main {
+    height: 100%;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* 调整滚动区域 */
+.el-scrollbar {
+    height: 100%;
+    
+    :deep(.el-scrollbar__wrap) {
+        overflow-x: hidden;
+    }
+}
+
+/* 调整菜单样式 */
+.el-menu {
+    border-right: none;
+}
+
+/* 路由过渡动画容器 */
+.el-fade-in-linear-enter-active {
+    transition: all 0.3s ease;
+}
+
+.el-fade-in-linear-leave-active {
+    transition: all 0.3s ease;
+}
+
+.el-fade-in-linear-enter-from,
+.el-fade-in-linear-leave-to {
+    opacity: 0;
 }
 </style>

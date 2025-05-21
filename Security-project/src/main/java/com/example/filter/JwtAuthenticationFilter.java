@@ -24,7 +24,6 @@ import java.io.IOException;
  * 从请求头提取JWT令牌并验证，验证通过后将用户信息存入SecurityContext
  */
 @Component
-@Order(Const.ORDER_JWT)
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     
     @Resource
@@ -64,6 +63,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                
+                // 从JWT中获取用户ID并设置到请求属性中
+                Integer userId = jwtUtils.toId(jwt);
+                if(userId != null) {
+                    request.setAttribute(Const.ATTR_USER_ID, userId);
+                    System.out.println("已设置用户ID到请求属性: " + userId);
+                } else {
+                    System.out.println("无法从JWT中提取用户ID");
+                }
             } else {
                 System.out.println("JWT令牌无效");
             }

@@ -67,6 +67,8 @@ function saveDetails() {
     })
 }
 
+// 暂时注释掉自动获取用户信息的代码
+/*
 get('/api/user/details', data => {
     baseForm.username = store.user.username
     baseForm.gender = data.gender
@@ -77,6 +79,10 @@ get('/api/user/details', data => {
     emailForm.email = store.user.email
     loading.form = false
 })
+*/
+
+// 直接设置loading.form为false，这样表单可以正常显示
+loading.form = false
 
 const coldTime = ref(0)
 const isEmailValid = ref(true)

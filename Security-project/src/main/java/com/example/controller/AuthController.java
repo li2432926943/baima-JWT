@@ -1,8 +1,10 @@
 package com.example.controller;
 
 import com.example.entity.RestBean;
+import com.example.entity.dto.Account;
 import com.example.entity.dto.AuthRequest;
 import com.example.entity.vo.response.AuthorizeVO;
+import com.example.service.AccountService;
 import com.example.utils.JwtUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +30,9 @@ public class AuthController {
 
     @Resource
     JwtUtils jwtUtils;
+    
+    @Resource
+    AccountService accountService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
@@ -50,8 +55,13 @@ public class AuthController {
                     .map(Object::toString)
                     .orElse("ROLE_USER");
             
-            // 生成用户ID（实际应从数据库获取）
-            int userId = Math.abs(username.hashCode()) % 10000;
+            // 查询数据库获取真实用户ID
+            Account account = accountService.findAccountByNameOrEmail(username);
+            if(account == null) {
+                return ResponseEntity.status(500)
+                    .body(RestBean.failure(500, "无法获取用户信息，请联系管理员"));
+            }
+            int userId = account.getId();
             
             // 生成JWT令牌
             String token = jwtUtils.createJwt(user, username, userId);

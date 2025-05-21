@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { unauthorized } from "@/net/index";
 
 // 开发环境标志，打包时可改为false
-const isDevelopment = true;
+const isDevelopment = false;
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -70,17 +70,6 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-    // 开发环境下，跳过登录验证
-    if (isDevelopment) {
-        // 直接跳转到主页，除非明确请求登录页
-        if (to.path === '/' && !to.path.startsWith('/login')) {
-            next('/index');
-        } else {
-            next();
-        }
-        return;
-    }
-    
     // 生产环境正常验证登录状态
     const isUnauthorized = unauthorized()
     if(to.name && to.name.startsWith('welcome') && !isUnauthorized) {
