@@ -62,7 +62,7 @@ const router = createRouter({
                 {
                     path: 'privacy-setting',
                     name: 'privacy-setting',
-                    component: () => import('@/views/index/PrivacySettingPage.vue')
+                    component: () => import('@/views/settings/PrivacySettingPage.vue')
                 }
             ]
         }
