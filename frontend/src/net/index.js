@@ -30,7 +30,12 @@ const defaultError = (error) => {
         
         // 处理常见的HTTP状态码
         if (status === 401) {
-            ElMessage.error(data.message || '用户名或密码错误，请重新登录')
+            // 检查是否是通知相关API
+            if (error.config && error.config.url && error.config.url.includes('/api/notification')) {
+                console.warn('通知API请求未授权，但不影响主要功能')
+            } else {
+                ElMessage.error(data.message || '用户名或密码错误，请重新登录')
+            }
         } else if (status === 403) {
             ElMessage.error('您没有权限执行此操作')
         } else if (status === 404) {

@@ -22,6 +22,7 @@ public class AccountDetailsServiceImpl extends ServiceImpl<AccountDetailsMapper,
 
     @Override
     @Transactional
+    //有就更新，没有就保存
     public synchronized boolean saveAccountDetails(int id, DetailsSaveVO vo) {
         Account account = service.findAccountByNameOrEmail(vo.getUsername());
         if(account == null || account.getId() == id) {
