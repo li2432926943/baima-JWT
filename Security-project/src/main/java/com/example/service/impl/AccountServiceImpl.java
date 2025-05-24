@@ -108,7 +108,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         if(this.existsAccountByEmail(email)) return "此电子邮件已被其他用户注册";
         if(this.existsAccountByUsername(username)) return "此用户名已被其他用户注册";
         String password=passwordEncoder.encode(vo.getPassword());
-        Account account = new Account(null, username, password, email, "ROLE_USER", null, new Date());
+        Account account = new Account(null, username, password, email, "ROLE_USER", new Date(), null);
         if(this.save(account)){
             stringRedisTemplate.delete(redisKey);
             return null;

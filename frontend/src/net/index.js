@@ -34,7 +34,7 @@ const defaultError = (error) => {
             if (error.config && error.config.url && error.config.url.includes('/api/notification')) {
                 console.warn('通知API请求未授权，但不影响主要功能')
             } else {
-                ElMessage.error(data.message || '用户名或密码错误，请重新登录')
+            ElMessage.error(data.message || '用户名或密码错误，请重新登录')
             }
         } else if (status === 403) {
             ElMessage.error('您没有权限执行此操作')
@@ -99,7 +99,7 @@ function takeAccessToken() {
             return authObj.token;
         } catch (error) {
             console.warn('Token可能已失效，但未过期');
-            return authObj.token;
+        return authObj.token;
         }
     } catch (e) {
         console.error('读取Token时出错:', e);

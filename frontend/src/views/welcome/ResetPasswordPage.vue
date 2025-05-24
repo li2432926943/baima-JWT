@@ -137,10 +137,10 @@ const resetPassword = async () => {
     code: code.value,
     password: resetForm.newPassword
   }, () => {
-    ElMessage.success('密码重置成功')
-    setTimeout(() => {
-      router.push('/')
-    }, 2000)
+  ElMessage.success('密码重置成功')
+  setTimeout(() => {
+    router.push('/')
+  }, 2000)
   }, (message) => {
     ElMessage.error(message)
   })

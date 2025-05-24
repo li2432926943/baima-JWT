@@ -310,9 +310,9 @@ get('/api/notification/list',
 // 在开发或生产环境中都会尝试获取用户信息
 get('/api/user/info', 
   (data) => {
-    store.user = data
-    username.value = store.user.username
-    email.value = store.user.email
+  store.user = data
+  username.value = store.user.username
+  email.value = store.user.email
   },
   (errorMsg) => {
     console.warn('获取用户信息失败:', errorMsg)

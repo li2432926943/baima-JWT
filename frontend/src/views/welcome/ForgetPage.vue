@@ -186,18 +186,18 @@ const sendVerifyCode = async () => {
   // 发送验证码到后端
   get(`/api/auth/ask-code?email=${forgetForm.email}&type=reset`, () => {
     ElMessage.success(`验证码已发送至邮箱: ${forgetForm.email}，请注意查收`)
+  codeButtonText.value = `${countdown}秒后重新获取`
+  
+  countdownTimer = setInterval(() => {
+    countdown--
     codeButtonText.value = `${countdown}秒后重新获取`
     
-    countdownTimer = setInterval(() => {
-      countdown--
-      codeButtonText.value = `${countdown}秒后重新获取`
-      
-      if (countdown <= 0) {
-        clearInterval(countdownTimer)
-        codeButtonText.value = '获取验证码'
-        isCodeSending.value = false
-      }
-    }, 1000)
+    if (countdown <= 0) {
+      clearInterval(countdownTimer)
+      codeButtonText.value = '获取验证码'
+      isCodeSending.value = false
+    }
+  }, 1000)
   }, (message) => {
     ElMessage.warning(message)
     isCodeSending.value = false
@@ -230,7 +230,7 @@ const verifyCode = async () => {
     email: forgetForm.email,
     code: forgetForm.verifyCode
   }, () => {
-    ElMessage.success('验证码验证通过')
+  ElMessage.success('验证码验证通过')
     // 验证成功，切换到第二步
     currentStep.value = 2
   }, (message) => {
@@ -270,10 +270,10 @@ const resetPassword = async () => {
     code: forgetForm.verifyCode,
     password: resetForm.newPassword
   }, () => {
-    ElMessage.success('密码重置成功')
-    setTimeout(() => {
-      router.push('/')
-    }, 2000)
+  ElMessage.success('密码重置成功')
+  setTimeout(() => {
+    router.push('/')
+  }, 2000)
   }, (message) => {
     ElMessage.error(message)
   })
