@@ -245,7 +245,7 @@
 <script setup>
 import {get, logout} from '@/net'
 import { useRouter } from 'vue-router'
-import {reactive, ref, watch} from "vue"
+import {reactive, ref, watch, computed} from "vue"
 import {
   Back,
   Bell,
@@ -270,8 +270,8 @@ const toggleDark = useToggle(isDark)
 
 const router = useRouter()
 
-// 设置默认头像
-const defaultAvatar = ref(store.avatarUrl)
+// 设置默认头像，使用计算属性以保持响应式
+const defaultAvatar = computed(() => store.avatarUrl)
 
 // 当深色模式变化时更新Element Plus的主题
 watch(isDark, (val) => {
