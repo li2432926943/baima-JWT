@@ -125,19 +125,47 @@ function modifyEmail() {
 }
 
 function beforeAvatarUpload(rawFile) {
+    console.log('准备上传头像:', {
+        name: rawFile.name,
+        type: rawFile.type,
+        size: rawFile.size,
+        sizeKB: Math.round(rawFile.size / 1024),
+        uploadUrl: axios.defaults.baseURL + '/api/image/avatar',
+        headers: accessHeader()
+    })
+    
     if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png') {
+        console.error('文件类型不支持:', rawFile.type)
         ElMessage.error('头像只能是 JPG/PNG 格式的')
         return false
     } else if(rawFile.size / 1024 > 1000) {
+        console.error('文件太大:', Math.round(rawFile.size / 1024), 'KB')
         ElMessage.error('头像大小不能大于 1M')
         return false
     }
+    
+    console.log('文件验证通过，开始上传到:', axios.defaults.baseURL + '/api/image/avatar')
     return true
 }
 
 function uploadSuccess(response){
+    console.log('头像上传成功，服务器响应:', response)
     ElMessage.success('头像上传成功')
     store.user.avatar = response.data
+}
+
+function uploadError(error) {
+    console.error('头像上传失败:', error)
+    if (error.status === 404) {
+        ElMessage.error('上传接口不存在 (404)，请检查后端服务是否正常运行')
+        console.error('请检查后端是否有 /api/image/avatar 接口')
+    } else if (error.status === 401) {
+        ElMessage.error('未授权 (401)，请重新登录')
+    } else if (error.status === 500) {
+        ElMessage.error('服务器内部错误 (500)，可能是MinIO配置问题')
+    } else {
+        ElMessage.error('头像上传失败: ' + (error.message || '未知错误'))
+    }
 }
 </script>
 
@@ -213,6 +241,7 @@ function uploadSuccess(response){
                                     :show-file-list="false"
                                     :before-upload="beforeAvatarUpload"
                                     :on-success="uploadSuccess"
+                                    :on-error="uploadError"
                                     :headers="accessHeader()">
                                 <el-button size="small" round>修改头像</el-button>
                             </el-upload>

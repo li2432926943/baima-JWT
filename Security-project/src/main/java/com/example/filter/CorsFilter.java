@@ -32,6 +32,13 @@ public class CorsFilter extends HttpFilter {
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         this.addCorsHeader(request, response);
+        
+        // 如果是OPTIONS预检请求，直接返回200状态码，不继续执行后续过滤器
+        if ("OPTIONS".equals(request.getMethod())) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            return;
+        }
+        
         chain.doFilter(request, response);
     }
 

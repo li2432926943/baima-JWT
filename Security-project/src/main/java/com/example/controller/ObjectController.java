@@ -18,7 +18,7 @@ public class ObjectController {
     @Resource
     ImageService imageService;
 
-    @GetMapping("/images/**")
+    @GetMapping("/images/avatar/**")
     public void imageFetch(HttpServletRequest request, HttpServletResponse response) throws Exception {
         response.setHeader("Content-Type", "image/jpg");
         this.fetchImage(request, response);

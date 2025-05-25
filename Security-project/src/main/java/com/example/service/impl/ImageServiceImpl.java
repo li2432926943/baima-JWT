@@ -48,24 +48,43 @@ public class ImageServiceImpl extends ServiceImpl<ImageStoreMapper, StoreImage> 
 
     @Override
     public String uploadAvatar(MultipartFile file, int id) throws IOException {
+        log.info("开始上传头像，用户ID: {}, 文件名: {}, 文件大小: {}", id, file.getOriginalFilename(), file.getSize());
+        
         String imageName = UUID.randomUUID().toString().replace("-", "");
         imageName = "/avatar/" + imageName;
+        log.info("生成的图片路径: {}", imageName);
+        
         PutObjectArgs args = PutObjectArgs.builder()
                 .bucket("study")
                 .stream(file.getInputStream(), file.getSize(), -1)
                 .object(imageName)
                 .build();
         try {
+            log.info("开始上传到MinIO...");
             client.putObject(args);
+            log.info("MinIO上传成功");
+            
             String avatar = accountMapper.selectById(id).getAvatar();
+            log.info("用户当前头像: {}", avatar);
+            
             this.deleteOldAvatar(avatar);
+            log.info("删除旧头像完成");
+            
             if(accountMapper.update(null, Wrappers.<Account>update()
                     .eq("id", id).set("avatar", imageName)) > 0) {
+                log.info("数据库更新成功");
                 return imageName;
-            } else
+            } else {
+                log.error("数据库更新失败");
                 return null;
+            }
         } catch (Exception e) {
-            log.error("图片上传出现问题: "+ e.getMessage(), e);
+            log.error("图片上传出现问题，详细错误信息: ", e);
+            log.error("错误类型: {}", e.getClass().getName());
+            log.error("错误消息: {}", e.getMessage());
+            if (e.getCause() != null) {
+                log.error("根本原因: {}", e.getCause().getMessage());
+            }
             return null;
         }
     }

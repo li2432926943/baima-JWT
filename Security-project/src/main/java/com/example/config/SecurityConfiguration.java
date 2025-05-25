@@ -78,6 +78,7 @@ public class SecurityConfiguration {
                     System.out.println("配置请求授权规则...");
                     conf.requestMatchers("/api/auth/**").permitAll()
                        .requestMatchers("/images/**").permitAll()  // 允许所有人访问图片资源
+                       .requestMatchers(request -> "OPTIONS".equals(request.getMethod())).permitAll()  // 允许所有OPTIONS预检请求
                        .anyRequest().authenticated();
                 })
                 // 禁用表单登录，改为使用自定义的JSON登录接口

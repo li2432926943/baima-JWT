@@ -34,9 +34,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
+        String method = request.getMethod();
         System.out.println("==========JWT过滤器检查==========");
         System.out.println("请求路径: " + path);
-        System.out.println("请求方法: " + request.getMethod());
+        System.out.println("请求方法: " + method);
+        
+        // 跳过OPTIONS预检请求
+        if ("OPTIONS".equals(method)) {
+            System.out.println("是否跳过JWT过滤器: true (OPTIONS预检请求)");
+            System.out.println("==============================");
+            return true;
+        }
         
         // 检查路径是否匹配/api/auth/**模式
         boolean shouldSkip = path.startsWith("/api/auth/");

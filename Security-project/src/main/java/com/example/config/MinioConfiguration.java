@@ -20,9 +20,29 @@ public class MinioConfiguration {
     @Bean
     public MinioClient minioClient(){
         log.info("Init minio client...");
-        return MinioClient.builder()
+        log.info("MinIO配置 - endpoint: {}, username: {}", endpoint, username);
+        
+        MinioClient client = MinioClient.builder()
                 .endpoint(endpoint)
                 .credentials(username, password)
                 .build();
+        
+        // 测试连接并创建桶
+        try {
+            log.info("测试MinIO连接...");
+            boolean bucketExists = client.bucketExists(io.minio.BucketExistsArgs.builder().bucket("study").build());
+            if (!bucketExists) {
+                log.info("创建study桶...");
+                client.makeBucket(io.minio.MakeBucketArgs.builder().bucket("study").build());
+                log.info("study桶创建成功");
+            } else {
+                log.info("study桶已存在");
+            }
+        } catch (Exception e) {
+            log.error("MinIO初始化失败: ", e);
+            log.error("请检查MinIO服务是否运行在: {}", endpoint);
+        }
+        
+        return client;
     }
 }

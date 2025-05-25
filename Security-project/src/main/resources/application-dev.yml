@@ -23,6 +23,10 @@ spring:
     username: guest
     password: guest
     virtual-host: /
+  minio:
+    endpoint: 'http://127.0.0.1:9000'
+    username: 'minioadmin'
+    password: 'minioadmin'
 
 mybatis-plus:
   configuration:

@@ -14,8 +14,3 @@ spring:
       limit: 20  # 单个IP在时间段内最大请求次数
       period: 1  # 计数时间周期（秒）
       block: 30  # 超出请求限制后封禁时间（秒）
-
-  minio:
-    endpoint: 'http://127.0.0.1:54722'
-    username: 'minioadmin'
-    password: 'minioadmin'
