@@ -52,7 +52,7 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'index-default',
-                    component: () => import('@/views/index/ForumPage.vue')
+                    component: () => import('@/views/Forum/TopicList.vue')
                 },
                 {
                     path: 'user-setting',

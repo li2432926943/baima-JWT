@@ -13,7 +13,12 @@ export const useStore = defineStore('general', {
                 registerTime: null
             },
             forum: {
-                types: []
+                types: [
+                    {name: '全部', id: 0, color: 'linear-gradient(45deg, white, red, orange, gold, green, blue)', desc: '展示所有类型的帖子'},
+                    {name: '技术讨论', id: 1, color: '#409EFF', desc: '分享技术心得、讨论技术问题'},
+                    {name: '生活分享', id: 2, color: '#67C23A', desc: '分享生活中的美好时光'},
+                    {name: '问题求助', id: 3, color: '#E6A23C', desc: '寻求帮助、解决问题'}
+                ]
             }
         }
     }, getters: {

@@ -2,7 +2,7 @@ package com.example.controller;
 
 import com.example.entity.RestBean;
 import com.example.entity.dto.Account;
-import com.example.entity.dto.AuthRequest;
+import com.example.entity.vo.request.AuthRequestVO;
 import com.example.entity.vo.response.AuthorizeVO;
 import com.example.service.AccountService;
 import com.example.utils.JwtUtils;
@@ -35,7 +35,7 @@ public class AuthController {
     AccountService accountService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+    public ResponseEntity<?> login(@RequestBody AuthRequestVO request) {
         try {
             // 创建用于认证的令牌
             UsernamePasswordAuthenticationToken authToken = 

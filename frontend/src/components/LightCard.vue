@@ -1,14 +1,14 @@
 <template>
   <div class="light-card">
-    <slot></slot>
+    <slot/>
   </div>
 </template>
 
 <style scoped>
 .light-card {
   background-color: var(--el-bg-color);
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: 5px;
+  padding: 10px;
   margin-bottom: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.3s, transform 0.3s;
